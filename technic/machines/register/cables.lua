@@ -59,6 +59,8 @@ minetest.register_on_placenode(function(pos, node)
 		for machine_name, _ in pairs(machine_list) do
 			if node.name == machine_name then
 				technic.update_cables(pos, node.name, tier, true)
+				technic.networks = {}
+				return
 			end
 		end
 	end
@@ -70,6 +72,8 @@ minetest.register_on_dignode(function(pos, node)
 		for machine_name, _ in pairs(machine_list) do
 			if node.name == machine_name then
 				technic.update_cables(pos, node.name, tier, true)
+				technic.networks = {}
+				return
 			end
 		end
 	end
