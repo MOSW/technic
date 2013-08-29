@@ -314,13 +314,33 @@ minetest.register_abm({
 			return
 		end
 
-		-- If the PR+BA supply is not enough for the RE demand: Shut everything down!
-		-- Note: another behaviour could also be imagined: provide the average power for all and let the node decide what happens.
-		-- This is much simpler though: Not enough power for all==no power for all
-		--print("NO POWER")
-		for _, pos1 in pairs(RE_nodes) do
+		-- If the PR+BA supply is not enough for the RE demand: Only charge the batteries.
+		local charge_factor = 0 -- Assume all batteries fully charged
+		if BA_eu_demand > 0 then
+			charge_factor = PR_eu_supply / BA_eu_demand
+		end
+		for n, pos1 in pairs(BA_nodes) do
 			meta1 = minetest.get_meta(pos1)
-			meta1:set_int(eu_input_str, 0)
+			local eu_demand = meta1:get_int(eu_demand_str)
+			meta1:set_int(eu_input_str, math.floor(eu_demand * charge_factor))
+			--dprint("Charging battery:"..math.floor(eu_demand*charge_factor))
+		end
+		-- If still a surplus we can start giving back to the fuel burning generators
+		-- Only full EU packages are given back. The rest is wasted.
+		if BA_eu_demand == 0 then
+			for _, pos1 in pairs(PR_nodes) do
+				meta1 = minetest.get_meta(pos1)
+				if meta1:get_int(eu_from_fuel_str) == 1 then
+					local eu_supply = meta1:get_int(eu_supply_str)
+					if PR_eu_supply < eu_supply then
+						break
+					else
+						-- Set the supply to 0 if we did not require it.
+						meta1:set_int(eu_supply_str, 0)
+						PR_eu_supply = PR_eu_supply - eu_supply
+					end
+				end
+			end
 		end
 	end,
 })
