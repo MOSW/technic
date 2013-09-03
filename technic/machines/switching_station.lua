@@ -150,19 +150,6 @@ minetest.register_abm({
 		local BA_nodes  = {} 
 		local RE_nodes  = {}
 
-		--		    -- Possible to turn off the entire network
-		--		    if meta:get_int("active") == 0 then
-		--		       for _,pos1 in pairs(RE_nodes) do
-		--			  meta1  = minetest.get_meta(pos1)
-		--			  meta1:set_int("EU_input", 0)
-		--		       end
-		--		       for _,pos1 in pairs(BA_nodes) do
-		--			  meta1  = minetest.get_meta(pos1)
-		--			  meta1:set_int("EU_input", 0)
-		--		       end
-		--		       return
-		--		    end
-
 		-- Which kind of network are we on:
 		pos1 = {x=pos.x, y=pos.y-1, z=pos.z}
 		all_nodes[1] = pos1
@@ -177,12 +164,14 @@ minetest.register_abm({
 				i = i + 1
 			until all_nodes[i] == nil
 		else
-			-- No type :-)
 			--dprint("Not connected to a network")
 			meta:set_string("infotext", "Switching Station - no network")
 			return
 		end
-		--dprint("nodes="..table.getn(all_nodes).." PR="..table.getn(PR_nodes).." BA="..table.getn(BA_nodes).." RE="..table.getn(RE_nodes))
+		--dprint("nodes="..table.getn(all_nodes)
+		--		.." PR="..table.getn(PR_nodes)
+		--		.." BA="..table.getn(BA_nodes)
+		--		.." RE="..table.getn(RE_nodes))
 
 		-- Strings for the meta data
 		local eu_demand_str    = tier.."_EU_demand"
@@ -223,10 +212,8 @@ minetest.register_abm({
 		--dprint("Total BA demand:"..BA_eu_demand)
 
 		meta:set_string("infotext",
-			"Switching Station. Supply: "
-			..tostring(PR_eu_supply + BA_eu_supply)
-			.." Demand: "
-			..tostring(RE_eu_demand + BA_eu_demand))
+				"Switching Station. Supply: "..PR_eu_supply
+				.." Demand: "..RE_eu_demand)
 
 		-- If the PR supply is enough for the RE demand supply them all
 		if PR_eu_supply >= RE_eu_demand then
