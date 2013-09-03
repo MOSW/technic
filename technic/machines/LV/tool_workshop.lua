@@ -54,19 +54,15 @@ minetest.register_abm({
 	chance   = 1,
 	action = function(pos, node, active_object_count, active_object_count_wider)
 		local meta         = minetest.get_meta(pos)
+		local inv          = meta:get_inventory()
 		local eu_input     = meta:get_int("LV_EU_input")
-		local state        = meta:get_int("state")
-		local next_state   = state
+		local machine_name = "Tool Workshop"
+		local machine_node = "technic:tool_workshop"
+		local demand       = 150
 
-		-- Machine information
-		local machine_name         = "Tool Workshop"
-		local machine_node         = "technic:tool_workshop"
-		local machine_state_demand = { 50, 150 }
-
-		-- Setup meta data if it does not exist. state is used as an indicator of this
-		if state == 0 then
-			meta:set_int("state", 1)
-			meta:set_int("LV_EU_demand", machine_state_demand[1])
+		-- Setup meta data if it does not exist.
+		if not eu_input then
+			meta:set_int("LV_EU_demand", demand)
 			meta:set_int("LV_EU_input", 0)
 			return
 		end
@@ -74,47 +70,23 @@ minetest.register_abm({
 		-- Power off automatically if no longer connected to a switching station
 		technic.switching_station_timeout_count(pos, "LV")
 
-		-- State machine
-		if eu_input == 0 then
-			-- Unpowered - go idle
-			--hacky_swap_node(pos, machine_node)
+		srcstack = inv:get_stack("src", 1)
+		if inv:is_empty("src") or
+		   srcstack:get_name() == "technic:water_can" or
+		   srcstack:get_name() == "technic:lava_can" then
+			meta:set_string("infotext", machine_name.." Idle")
+			meta:set_int("LV_EU_demand", 0)
+			return
+		end
+		
+		if eu_input < demand then
 			meta:set_string("infotext", machine_name.." Unpowered")
-			next_state = 1
-		elseif eu_input == machine_state_demand[state] then
-			-- Powered - do the state specific actions
-			local inv = meta:get_inventory()
-
-			if state == 1 then
-				--hacky_swap_node(pos, machine_node)
-				meta:set_string("infotext", machine_name.." Idle")
-				if not inv:is_empty("src") then
-					next_state = 2
-				end
-			elseif state == 2 then
-				--hacky_swap_node(pos, machine_node.."_active")
-				meta:set_string("infotext", machine_name.." Active")
-
-				if inv:is_empty("src") then
-					next_state = 1
-				else
-					srcstack = inv:get_stack("src", 1)
-					src_item = srcstack:to_table()
-					-- Cannot charge cans
-					if src_item["name"] == "technic:water_can" or src_item["name"] == "technic:lava_can" then
-						return
-					end
-					local wear = tonumber(src_item["wear"])
-					wear = math.max(1, wear-2000) -- Improve the tool this much every tick
-					src_item["wear"] = tostring(wear)
-					inv:set_stack("src", 1, src_item)
-				end
-			end
+		elseif eu_input >= demand then
+			meta:set_string("infotext", machine_name.." Active")
+			srcstack:add_wear(-2000)
+			inv:set_stack("src", 1, srcstack)
 		end
-		-- Change state?
-		if next_state ~= state then
-			meta:set_int("LV_EU_demand", machine_state_demand[next_state])
-			meta:set_int("state", next_state)
-		end
+		meta:set_int("LV_EU_demand", demand)
 	end
 }) 
 

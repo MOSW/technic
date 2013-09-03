@@ -140,6 +140,7 @@ minetest.register_abm({
 		   (not inv:room_for_item("dst", result)) then
 			hacky_swap_node(pos, machine_node)
 			meta:set_string("infotext", machine_name.." Idle")
+			meta:set_int("LV_EU_demand", 0)
 			meta:set_int("src_time", 0)
 			return
 		end
