@@ -114,14 +114,13 @@ minetest.register_abm({
 		-- The machine will automatically shut down if disconnected from power in some fashion.
 		local meta     = minetest.get_meta(pos)
 		local inv      = meta:get_inventory()
-		local empty    = inv:is_empty("src")
 		local srcstack = inv:get_stack("src", 1)
 		local eu_input = meta:get_int("LV_EU_input")
 
 		-- Machine information
 		local machine_name = "Extractor"
 		local machine_node = "technic:extractor"
-		local demand = 300
+		local demand       = 300
 
 		-- Setup meta data if it does not exist.
 		if not eu_input then
@@ -142,7 +141,7 @@ minetest.register_abm({
 		if recipe then
 			result = {name=recipe.dst_name, count=recipe.dst_count}
 		end 
-		if empty or (not recipe) or (not result) or
+		if inv:is_empty("src") or (not recipe) or (not result) or
 		   (not inv:room_for_item("dst", result)) then
 			hacky_swap_node(pos, machine_node)
 			meta:set_string("infotext", machine_name.." Idle")

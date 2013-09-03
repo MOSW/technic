@@ -6,9 +6,9 @@
 -- The nuclear reactor core needs water and a protective shield to work.
 -- This is checked now and then and if the machine is tampered with... BOOM!
 
-local burn_ticks   = 24 * 60                    -- [minutes]. How many minutes does the power plant burn per serving?
-local power_supply = 100000                     -- EUs
-local fuel_type    = "technic:enriched_uranium" -- The reactor burns this stuff
+local burn_ticks   = 7 * 24 * 60 * 60       -- (seconds).
+local power_supply = 100000                 -- EUs
+local fuel_type    = "technic:uranium_fuel" -- The reactor burns this stuff
 
 
 -- FIXME: recipe must make more sense like a rod recepticle, steam chamber, HV generator?
@@ -117,18 +117,19 @@ minetest.register_node("technic:hv_nuclear_reactor_core_active", {
 })
 
 local check_reactor_structure = function(pos)
-	-- The reactor consists of an 11x11x11 cube structure
+	-- The reactor consists of a 9x9x9 cube structure
 	-- A cross section through the middle:
 	--  CCCC CCCC
-	--  CCCC CCCC
-	--  CCSS SSCC
-	--  CCSWWWSCC
-	--  CCSW#WSCC
-	--  CCSW|WSCC
-	--  CCSS|SSCC
+	--  CBBB BBBC
+	--  CBSS SSBC
+	--  CBSWWWSBC
+	--  CBSW#WSBC
+	--  CBSW|WSBC
+	--  CBSS|SSBC
+	--  CBBB|BBBC
 	--  CCCC|CCCC
-	--  CCCC|CCCC
-	--  C = Concrete, S = Stainless Steel, W = water node (not floating), #=reactor core, |=HV cable
+	--  C = Concrete, B = Blast resistant concrete, S = Stainless Steel,
+	--  W = water node, # = reactor core, | = HV cable
 	--  The man-hole and the HV cable is only in the middle
 	--  The man-hole is optional
 
@@ -140,30 +141,34 @@ local check_reactor_structure = function(pos)
 	local area = VoxelArea:new({MinEdge=MinEdge, MaxEdge=MaxEdge})
 
 	local c_concrete = minetest.get_content_id("technic:concrete")
+	local c_blast_concrete = minetest.get_content_id("technic:blast_resistant_concrete")
 	local c_stainless_steel = minetest.get_content_id("technic:stainless_steel_block")
 	local c_water_source = minetest.get_content_id("default:water_source")
 	local c_water_flowing = minetest.get_content_id("default:water_flowing")
 
-	local outerlayer, innerlayer, waterlayer = 0, 0, 0
+	local concretelayer, blastlayer, steellayer, waterlayer = 0, 0, 0, 0
 
 	for z = pos1.z, pos2.z do
 	for y = pos1.y, pos2.y do
 	for x = pos1.x, pos2.x do
-		-- If the position is in the outer two layers
+		-- If the position is in the outer layer
 		if x == pos1.x or x == pos2.x or
 		   y == pos1.y or y == pos2.y or
-		   z == pos1.z or z == pos2.z or
-		   x == pos1.x+1 or x == pos2.x-1 or
+		   z == pos1.z or z == pos2.z then
+			if data[area:index(x, y, z)] == c_concrete then
+				concretelayer = concretelayer + 1
+			end
+		elseif x == pos1.x+1 or x == pos2.x-1 or
 		   y == pos1.y+1 or y == pos2.y-1 or
 		   z == pos1.z+1 or z == pos2.z-1 then
-			if data[area:index(x, y, z)] == c_concrete then
-				outerlayer = outerlayer + 1
+			if data[area:index(x, y, z)] == c_blast_concrete then
+				blastlayer = blastlayer + 1
 			end
 		elseif x == pos1.x+2 or x == pos2.x-2 or
 		   y == pos1.y+2 or y == pos2.y-2 or
 		   z == pos1.z+2 or z == pos2.z-2 then
 			if data[area:index(x, y, z)] == c_stainless_steel then
-				innerlayer = innerlayer + 1
+				steellayer = steellayer + 1
 			end
 		elseif x == pos1.x+3 or x == pos2.x-3 or
 		   y == pos1.y+3 or y == pos2.y-3 or
@@ -177,8 +182,9 @@ local check_reactor_structure = function(pos)
 	end
 	end
 	if waterlayer >= 25 and
-	   innerlayer >= 96 and
-	   outerlayer >= 216 then
+	   steellayer >= 96 and
+	   blastlayer >= 216 and
+	   concretelayer >= 384 then
 		return true
 	end
 end
@@ -193,25 +199,13 @@ minetest.register_abm({
 	chance   = 1,
 	action = function(pos, node, active_object_count, active_object_count_wider)
 		local meta = minetest.get_meta(pos)
-		local burn_time = meta:get_int("burn_time")
+		local burn_time = meta:get_int("burn_time") or 0
 
-		-- If more to burn and the energy produced was used: produce some more
-		if burn_time > 0 then
-			if not check_reactor_structure(pos) then
-				explode_reactor(pos)
-			end
-			if meta:get_int("HV_EU_supply") == 0 then
-				burn_time = burn_time - 1
-				meta:set_int("burn_time", burn_time)
-				local percent = math.floor(burn_time / (burn_ticks * 60) * 100)
-				meta:set_string("infotext", "Nuclear Reactor Core ("..percent.."%)")
-				meta:set_int("HV_EU_supply", power_supply)
-			end
-		elseif burn_time == 0 then
+		if burn_time >= burn_ticks or burn_time == 0 then
 			local inv = meta:get_inventory()
-			local correct_fuel_count = 0
 			if not inv:is_empty("src") then 
 				local srclist = inv:get_list("src")
+				local correct_fuel_count = 0
 				for _, srcstack in pairs(srclist) do
 					if srcstack then
 						if  srcstack:get_name() == fuel_type then
@@ -221,27 +215,32 @@ minetest.register_abm({
 				end
 				-- Check that the reactor is complete as well
 				-- as the correct number of correct fuel
-				if correct_fuel_count == 6 then
-					if check_reactor_structure(pos) then
-						burn_time = burn_ticks * 60
-						meta:set_int("burn_time", burn_time)
-						hacky_swap_node(pos, "technic:hv_nuclear_reactor_core_active") 
-						meta:set_int("HV_EU_supply", power_supply)
-						for idx, srcstack in pairs(srclist) do
-							srcstack:take_item()
-							inv:set_stack("src", idx, srcstack)
-						end
+				if correct_fuel_count == 6 and
+				   check_reactor_structure(pos) then
+					meta:set_int("burn_time", 1)
+					hacky_swap_node(pos, "technic:hv_nuclear_reactor_core_active") 
+					meta:set_int("HV_EU_supply", power_supply)
+					for idx, srcstack in pairs(srclist) do
+						srcstack:take_item()
+						inv:set_stack("src", idx, srcstack)
 					end
-				else
-					meta:set_int("HV_EU_supply", 0)
+					return
 				end
 			end
-		end
-
-		-- Nothing left to burn
-		if burn_time == 0 then
+			meta:set_int("HV_EU_supply", 0)
+			meta:set_int("burn_time", 0)
 			meta:set_string("infotext", "Nuclear Reactor Core (idle)")
 			hacky_swap_node(pos, "technic:hv_nuclear_reactor_core")
+		-- If more to burn and the energy produced was used: produce some more
+		elseif burn_time > 0 then
+			if not check_reactor_structure(pos) then
+				explode_reactor(pos)
+			end
+			burn_time = burn_time + 1
+			meta:set_int("burn_time", burn_time)
+			local percent = math.floor(burn_time / burn_ticks * 100)
+			meta:set_string("infotext", "Nuclear Reactor Core ("..percent.."%)")
+			meta:set_int("HV_EU_supply", power_supply)
 		end
 	end
 })

@@ -152,11 +152,11 @@ minetest.register_craft({
 })
 
 minetest.register_craft({
-	output = 'technic:mixed_metal_ingot 2',
+	output = 'technic:mixed_metal_ingot 9',
 	recipe = {
 		{'technic:stainless_steel_ingot', 'technic:stainless_steel_ingot', 'technic:stainless_steel_ingot'},
-		{'default:bronze_ingot', 'default:bronze_ingot', 'default:bronze_ingot'},
-		{'moreores:tin_ingot', 'moreores:tin_ingot', 'moreores:tin_ingot'},
+		{'default:bronze_ingot',          'default:bronze_ingot',          'default:bronze_ingot'},
+		{'moreores:tin_ingot',            'moreores:tin_ingot',            'moreores:tin_ingot'},
 	}
 })
 

@@ -1,25 +1,26 @@
 minetest.register_craftitem( "technic:silicon_wafer", {
 	description = "Silicon Wafer",
 	inventory_image = "technic_silicon_wafer.png",
-	on_place_on_ground = minetest.craftitem_place_item,
 })
 
 minetest.register_craftitem( "technic:doped_silicon_wafer", {
 	description = "Doped Silicon Wafer",
 	inventory_image = "technic_doped_silicon_wafer.png",
-	on_place_on_ground = minetest.craftitem_place_item,
 })
 
-minetest.register_craftitem( "technic:enriched_uranium", {
+minetest.register_craftitem("technic:enriched_uranium", {
 	description = "Enriched Uranium",
 	inventory_image = "technic_enriched_uranium.png",
-	on_place_on_ground = minetest.craftitem_place_item,
+})
+
+minetest.register_craftitem("technic:uranium_fuel", {
+	description = "Uranium Fuel",
+	inventory_image = "technic_uranium_fuel.png",
 })
 
 minetest.register_craftitem( "technic:diamond_drill_head", {
 	description = "Diamond Drill Head",
 	inventory_image = "technic_diamond_drill_head.png",
-	on_place_on_ground = minetest.craftitem_place_item,
 })
 
 minetest.register_tool("technic:blue_energy_crystal", {
