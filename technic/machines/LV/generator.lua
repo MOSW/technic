@@ -17,7 +17,6 @@ minetest.register_craft({
 
 local generator_formspec =
 	"invsize[8,9;]"..
-	"image[0,0;5,5;technic_generator_menu.png]"..
 	"label[0,0;Generator]"..
 	"list[current_name;src;3,1;1,1;]"..
 	"image[4,1;1,1;default_furnace_fire_bg.png]"..
