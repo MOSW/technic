@@ -193,6 +193,15 @@ local explode_reactor = function(pos)
 	print("A reactor exploded at "..minetest.pos_to_string(pos))
 end
 
+local function damage_nearby_players(pos)
+	local objs = minetest.get_objects_inside_radius(pos, 4)
+	for _, o in pairs(objs) do
+		if o:is_player() then
+			o:set_hp(math.max(o:get_hp() - 2, 0))
+		end
+	end
+end
+
 minetest.register_abm({
 	nodenames = {"technic:hv_nuclear_reactor_core", "technic:hv_nuclear_reactor_core_active"},
 	interval = 1,
@@ -231,8 +240,8 @@ minetest.register_abm({
 			meta:set_int("burn_time", 0)
 			meta:set_string("infotext", "Nuclear Reactor Core (idle)")
 			hacky_swap_node(pos, "technic:hv_nuclear_reactor_core")
-		-- If more to burn and the energy produced was used: produce some more
 		elseif burn_time > 0 then
+			damage_nearby_players(pos)
 			if not check_reactor_structure(pos) then
 				explode_reactor(pos)
 			end
