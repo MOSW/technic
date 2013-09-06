@@ -30,6 +30,8 @@
 technic.DBG = 1
 local dprint = technic.dprint
 
+technic.networks = {}
+
 minetest.register_craft({
 	output = "technic:switching_station",
 	recipe = {
@@ -174,19 +176,17 @@ minetest.register_abm({
 		local RE_EU            = 0 -- EUs to RE nodes
 
 		local tier      = ""
-		local all_nodes = {}
-		local PR_nodes  = {}
-		local BA_nodes  = {} 
-		local RE_nodes  = {}
+		local PR_nodes
+		local BA_nodes 
+		local RE_nodes
 
 		-- Which kind of network are we on:
 		pos1 = {x=pos.x, y=pos.y-1, z=pos.z}
-		all_nodes[1] = pos1
 
 		local name = minetest.get_node(pos1).name
 		local tier = technic.get_cable_tier(name)
 		if tier then
-			PR_nodes, RE_nodes, BA_nodes = get_network(pos1, tier)
+			PR_nodes, BA_nodes, RE_nodes = get_network(pos1, tier)
 		else
 			--dprint("Not connected to a network")
 			meta:set_string("infotext", "Switching Station - no network")
