@@ -11,11 +11,6 @@ minetest.register_craft({
 	}
 })
 
-minetest.register_craftitem("technic:tool_workshop", {
-	description = "Tool Workshop",
-	stack_max = 99,
-}) 
-
 local workshop_formspec =
 	"invsize[8,9;]"..
 	"list[current_name;src;3,1;1,1;]"..
@@ -55,27 +50,28 @@ minetest.register_abm({
 	action = function(pos, node, active_object_count, active_object_count_wider)
 		local meta         = minetest.get_meta(pos)
 		local inv          = meta:get_inventory()
-		local eu_input     = meta:get_int("LV_EU_input")
+		local eu_input     = meta:get_int("MV_EU_input")
 		local machine_name = "Tool Workshop"
 		local machine_node = "technic:tool_workshop"
-		local demand       = 150
+		local demand       = 5000
 
 		-- Setup meta data if it does not exist.
 		if not eu_input then
-			meta:set_int("LV_EU_demand", demand)
-			meta:set_int("LV_EU_input", 0)
+			meta:set_int("MV_EU_demand", demand)
+			meta:set_int("MV_EU_input", 0)
 			return
 		end
 
 		-- Power off automatically if no longer connected to a switching station
-		technic.switching_station_timeout_count(pos, "LV")
+		technic.switching_station_timeout_count(pos, "MV")
 
 		srcstack = inv:get_stack("src", 1)
 		if inv:is_empty("src") or
+		   srcstack:get_wear() == 0 or
 		   srcstack:get_name() == "technic:water_can" or
 		   srcstack:get_name() == "technic:lava_can" then
 			meta:set_string("infotext", machine_name.." Idle")
-			meta:set_int("LV_EU_demand", 0)
+			meta:set_int("MV_EU_demand", 0)
 			return
 		end
 		
@@ -83,12 +79,12 @@ minetest.register_abm({
 			meta:set_string("infotext", machine_name.." Unpowered")
 		elseif eu_input >= demand then
 			meta:set_string("infotext", machine_name.." Active")
-			srcstack:add_wear(-2000)
+			srcstack:add_wear(-1000)
 			inv:set_stack("src", 1, srcstack)
 		end
-		meta:set_int("LV_EU_demand", demand)
+		meta:set_int("MV_EU_demand", demand)
 	end
 }) 
 
-technic.register_machine("LV", "technic:tool_workshop", technic.receiver)
+technic.register_machine("MV", "technic:tool_workshop", technic.receiver)
 
