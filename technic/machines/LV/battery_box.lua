@@ -1,10 +1,4 @@
 -- LV Battery box and some other nodes...
-local max_charge         = 50000 -- Set maximum charge for the device here
-local max_charge_rate    = 100   -- Set maximum rate of charging
-local max_discharge_rate = 200   -- Set maximum rate of discharging
-local charge_step        = 100
-local discharge_step     = 400
-
 
 technic.register_power_tool("technic:battery", 10000)
 technic.register_power_tool("technic:red_energy_crystal", 100000)
@@ -41,5 +35,12 @@ minetest.register_craft({
 	}
 })
 
-technic.register_battery_box("LV", max_charge, max_charge_rate, max_discharge_rate, charge_step, discharge_step)
+technic.register_battery_box({
+	tier           = "LV",
+	max_charge     = 50000,
+	charge_rate    = 1000,
+	discharge_rate = 4000,
+	charge_step    = 500,
+	discharge_step = 800,
+})
 

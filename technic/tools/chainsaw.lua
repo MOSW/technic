@@ -50,6 +50,16 @@ if chainsaw_leaves == true then
         timber_nodenames["default:leaves"] = true
 end
 
+-- technic_worldgen defines rubber trees if moretrees isn't installed
+if minetest.get_modpath("technic_worldgen") or
+   minetest.get_modpath("moretrees") then
+	timber_nodenames["moretrees:rubber_tree_trunk_empty"] = true
+	timber_nodenames["moretrees:rubber_tree_trunk"]       = true
+	if chainsaw_leaves then
+                timber_nodenames["moretrees:rubber_tree_leaves"] = true
+	end
+end
+
 -- Support moretrees if it is there
 if( minetest.get_modpath("moretrees") ~= nil ) then
         timber_nodenames["moretrees:apple_tree_trunk"]                 = true
@@ -66,9 +76,7 @@ if( minetest.get_modpath("moretrees") ~= nil ) then
         timber_nodenames["moretrees:palm_trunk_sideways"]              = true
         timber_nodenames["moretrees:pine_trunk"]                       = true
         timber_nodenames["moretrees:pine_trunk_sideways"]              = true
-        timber_nodenames["moretrees:rubber_tree_trunk"]                = true
         timber_nodenames["moretrees:rubber_tree_trunk_sideways"]       = true
-        timber_nodenames["moretrees:rubber_tree_trunk_empty"]          = true
         timber_nodenames["moretrees:rubber_tree_trunk_sideways_empty"] = true
         timber_nodenames["moretrees:sequoia_trunk"]                    = true
         timber_nodenames["moretrees:sequoia_trunk_sideways"]           = true
@@ -79,7 +87,7 @@ if( minetest.get_modpath("moretrees") ~= nil ) then
         timber_nodenames["moretrees:jungletree_trunk"]                 = true
         timber_nodenames["moretrees:jungletree_trunk_sideways"]        = true
 
-        if chainsaw_leaves == true then
+        if chainsaw_leaves then
                 timber_nodenames["moretrees:apple_tree_leaves"]        = true
                 timber_nodenames["moretrees:oak_leaves"]               = true
                 timber_nodenames["moretrees:sequoia_leaves"]           = true
@@ -90,7 +98,6 @@ if( minetest.get_modpath("moretrees") ~= nil ) then
                 timber_nodenames["moretrees:spruce_leaves"]            = true
                 timber_nodenames["moretrees:pine_leaves"]              = true
                 timber_nodenames["moretrees:willow_leaves"]            = true
-                timber_nodenames["moretrees:rubber_tree_leaves"]       = true
                 timber_nodenames["moretrees:jungletree_leaves_green"]  = true
                 timber_nodenames["moretrees:jungletree_leaves_yellow"] = true
                 timber_nodenames["moretrees:jungletree_leaves_red"]    = true

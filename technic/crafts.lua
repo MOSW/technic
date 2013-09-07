@@ -56,7 +56,7 @@ minetest.register_craft({
 	output = 'technic:diamond_drill_head',
 	recipe = {
 		{'technic:stainless_steel_ingot', 'default:diamond', 'technic:stainless_steel_ingot'},
-		{'default:diamond', '', 'default:diamond'},
+		{'default:diamond',               '',                'default:diamond'},
 		{'technic:stainless_steel_ingot', 'default:diamond', 'technic:stainless_steel_ingot'},
 	}
 })

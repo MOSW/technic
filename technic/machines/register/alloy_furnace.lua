@@ -135,7 +135,7 @@ function technic.register_alloy_furnace(data)
 			inv:set_size("upgrade1", 1)
 			inv:set_size("upgrade2", 1)
 		end,
-		can_dig = function(pos,player)
+		can_dig = function(pos, player)
 			local meta = minetest.get_meta(pos);
 			local inv = meta:get_inventory()
 			if not inv:is_empty("src") or not inv:is_empty("dst") or
@@ -165,7 +165,7 @@ function technic.register_alloy_furnace(data)
 		technic = data,
 		legacy_facedir_simple = true,
 		sounds = default.node_sound_stone_defaults(),
-		can_dig = function(pos,player)
+		can_dig = function(pos, player)
 			local meta = minetest.get_meta(pos);
 			local inv = meta:get_inventory()
 			if not inv:is_empty("src") or not inv:is_empty("dst") or

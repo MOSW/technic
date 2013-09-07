@@ -196,6 +196,11 @@ minetest.register_abm({
 	end
 })
 
+if minetest.get_modpath("mesecons_mvps") then
+	mesecon:register_mvps_stopper("technic:forcefield")
+end
+-- TODO: Register a stopper for frames
+
 technic.register_machine("HV", "technic:forcefield_emitter_on",  technic.receiver)
 technic.register_machine("HV", "technic:forcefield_emitter_off", technic.receiver)
 

@@ -174,7 +174,7 @@ function technic.register_electric_furnace(data)
 					method = "cooking",
 					width = 1,
 					items = inv:get_list("src")})
-			if inv:is_empty("src") or not result then
+			if not result or result.time == 0 then
 				meta:set_int(data.tier.."_EU_demand", 0)
 				hacky_swap_node(pos, machine_node)
 				meta:set_string("infotext", machine_name.." Idle")

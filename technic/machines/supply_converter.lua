@@ -56,6 +56,7 @@ minetest.register_abm({
 		local to   = technic.get_cable_tier(name_down)
 
 		if from and to then
+			technic.switching_station_timeout_count(pos, from)
 			local input = meta:get_int(from.."_EU_input")
 			meta:set_int(from.."_EU_demand", demand)
 			meta:set_int(from.."_EU_supply", 0)

@@ -13,6 +13,7 @@ technic.legacy_nodenames = {
 	["technic:battery_box6"] = "technic:lv_battery_box6",
 	["technic:battery_box7"] = "technic:lv_battery_box7",
 	["technic:battery_box8"] = "technic:lv_battery_box8",
+	["technic:concrete_post"] = "technic:concrete_post0",
 	["technic:electric_furnace"]        = "technic:lv_electric_furnace",
 	["technic:electric_furnace_active"] = "technic:lv_electric_furnace_active",
 	["technic:grinder"]        = "technic:lv_grinder",

@@ -12,12 +12,11 @@ function technic.register_cable(tier, size)
 	for z1 = 0, 1 do
 	for z2 = 0, 1 do
 		local id = technic.get_cable_id({x1, x2, y1, y2, z1, z2})
-		--local id = tostring(x1)..tostring(x2)..tostring(y1)..tostring(y2)..tostring(z1)..tostring(z2)
 
 		technic.cables["technic:"..ltier.."_cable"..id] = tier
 
 		local groups = {snappy=2, choppy=2, oddly_breakable_by_hand=2}
-		if id ~= "0" then
+		if id ~= 0 then
 			groups.not_in_creative_inventory = 1
 		end
 
@@ -37,12 +36,12 @@ function technic.register_cable(tier, size)
 				fixed = technic.gen_cable_nodebox(x1, y1, z1, x2, y2, z2, size)
 			},
 			after_place_node = function(pos)
-				local name = minetest.get_node(pos).name
-				technic.update_cables(pos, name, technic.get_cable_tier(name))
+				local node = minetest.get_node(pos)
+				technic.update_cables(pos, technic.get_cable_tier(node.name))
 			end,
 			after_dig_node = function(pos, oldnode)
 				local tier = technic.get_cable_tier(oldnode.name)
-				technic.update_cables(pos, oldnode.name, tier, true)
+				technic.update_cables(pos, tier, true)
 			end
 		})
 	end
@@ -58,7 +57,7 @@ minetest.register_on_placenode(function(pos, node)
 	for tier, machine_list in pairs(technic.machines) do
 		for machine_name, _ in pairs(machine_list) do
 			if node.name == machine_name then
-				technic.update_cables(pos, node.name, tier, true)
+				technic.update_cables(pos, tier, true)
 			end
 		end
 	end
@@ -69,7 +68,7 @@ minetest.register_on_dignode(function(pos, node)
 	for tier, machine_list in pairs(technic.machines) do
 		for machine_name, _ in pairs(machine_list) do
 			if node.name == machine_name then
-				technic.update_cables(pos, node.name, tier, true)
+				technic.update_cables(pos, tier, true)
 			end
 		end
 	end
@@ -77,12 +76,12 @@ end)
 
 
 function technic.get_cable_id(links)
-		return tostring((links[6] * 1) + (links[5] * 2)
-				+ (links[4] * 4)  + (links[3] * 8)
-				+ (links[2] * 16) + (links[1] * 32))
+	return (links[6] * 1) + (links[5] * 2)
+			+ (links[4] * 4)  + (links[3] * 8)
+			+ (links[2] * 16) + (links[1] * 32)
 end
 
-function technic.update_cables(pos, name, tier, no_set, secondrun)
+function technic.update_cables(pos, tier, no_set, secondrun)
 	local link_positions = {
 		{x=pos.x+1, y=pos.y,   z=pos.z},
 		{x=pos.x-1, y=pos.y,   z=pos.z},
@@ -97,16 +96,19 @@ function technic.update_cables(pos, name, tier, no_set, secondrun)
 		local connect_type = technic.cables_should_connect(pos, link_pos, tier)
 		if connect_type then
 			links[i] = 1
-			-- Have cables next to us update theirselves, but only once.
-			-- (We don't want to update the entire network, or start an infinite loop of updates)
+			-- Have cables next to us update theirselves,
+			-- but only once. (We don't want to update the entire
+			-- network or start an infinite loop of updates)
 			if not secondrun and connect_type == "cable" then
-				technic.update_cables(link_pos, name, tier, false, true)
+				technic.update_cables(link_pos, tier, false, true)
 			end
 		end
 	end
-	-- We don't want to set ourselves if we have been removed or we are updating a machine
+	-- We don't want to set ourselves if we have been removed or we are
+	-- updating a machine
 	if not no_set then
-		hacky_swap_node(pos, "technic:"..string.lower(tier).."_cable"..technic.get_cable_id(links))
+		minetest.set_node(pos, {name="technic:"..string.lower(tier)
+				.."_cable"..technic.get_cable_id(links)})
 
 	end
 end
@@ -127,13 +129,11 @@ function technic.cables_should_connect(pos1, pos2, tier)
 
 	if technic.is_tier_cable(name, tier) then
 		return "cable"
-	elseif technic.machines[tier][name] and
-			vector.new(pos2) - vector.new(pos1) == vector.new(0, 1, 0) then
+	elseif technic.machines[tier][name] then
 		return "machine"
 	end
 	return false
 end
-
 
 
 function technic.gen_cable_nodebox(x1, y1, z1, x2, y2, z2, size)

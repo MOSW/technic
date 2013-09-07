@@ -50,7 +50,7 @@ function technic.send_items(pos, x_velocity, z_velocity)
 				item1:get_luaentity().start_pos = {x=pos.x, y=pos.y, z=pos.z}
 				item1:setvelocity({x=x_velocity, y=0, z=z_velocity})
 				item1:setacceleration({x=0, y=0, z=0})
-				stack:take_item(1);
+				stack:take_item(1)
 				inv:set_stack("dst", i, stack)
 				return
 			end
